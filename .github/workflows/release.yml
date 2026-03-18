@@ -172,9 +172,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           name: 'TwitterMediaHarvest ${{ needs.release-metadata.outputs.version-tag }}'
-          artifacts: |
-          ${{ github.workspace }}/artifacts/dist/*.zip
-          ${{ github.workspace }}/artifacts/dist/*.xpi
+          artifacts: ${{ format('{0}/dist/*.zip,{0}/dist/*.xpi', github.workspace) }}
           token: ${{ secrets.GITHUB_TOKEN }}
           body: ${{ needs.release-metadata.outputs.changelog }}
           tag: ${{ needs.release-metadata.outputs.version-tag }}
