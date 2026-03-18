@@ -5,7 +5,6 @@ concurrency:
   cancel-in-progress: false
 
 on:
-  create:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+' # Matches semantic version tags like v1.2.3
