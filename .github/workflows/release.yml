@@ -5,6 +5,7 @@ concurrency:
   cancel-in-progress: false
 
 on:
+  create:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+' # Matches semantic version tags like v1.2.3
@@ -35,7 +36,6 @@ jobs:
             echo "should-release=false" >> $GITHUB_OUTPUT
             echo "Not a semantic version tag, skipping release"
           fi
-
       - uses: actions/checkout@v5
         if: steps.validate-tag.outputs.should-release == 'true'
         with:
@@ -73,14 +73,12 @@ jobs:
             echo "error: DSN not found in .env file" >&2
             exit 1
           fi
-
       - name: Run Tests
         if: steps.validate-tag.outputs.should-release == 'true'
         run: |
           yarn lint
           yarn ci:all
           yarn check:all
-
       - name: Confirm version
         if: steps.validate-tag.outputs.should-release == 'true'
         id: target-version
@@ -89,7 +87,6 @@ jobs:
           VERSION=$(jq -r .version package.json)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "version-tag=v$VERSION" >> $GITHUB_OUTPUT
-
       - name: Extract Changelog
         if: steps.validate-tag.outputs.should-release == 'true'
         id: changelog
@@ -127,13 +124,11 @@ jobs:
             echo "error: DSN not found in .env file" >&2
             exit 1
           fi
-
       - name: Build ${{ matrix.browser }}
         run: |
           yarn install --immutable
           yarn check:envfile
           yarn build:tools
-
           if [ "${{ matrix.browser }}" = "chrome" ]; then
             yarn build:chrome:all
           elif [ "${{ matrix.browser }}" = "edge" ]; then
@@ -141,7 +136,6 @@ jobs:
           elif [ "${{ matrix.browser }}" = "firefox" ]; then
             yarn build:firefox:all:self-sign
           fi
-
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -218,7 +212,6 @@ jobs:
         id: release-name
         run: |
           echo "name=$(node ./utils/make-release-name.mjs --browser=${{ matrix.target }})" >> $GITHUB_OUTPUT
-
       - name: Download Artifact
         id: download-artifact
         uses: actions/download-artifact@v7
@@ -262,7 +255,6 @@ jobs:
         id: get_filepath
         run: |
           echo "zip_file=$(ls ${{ steps.download-artifact.outputs.download-path }}/dist/*chrome*)" >> $GITHUB_OUTPUT
-
       - name: Publish to Chrome Web Store
         uses: mobilefirstllc/cws-publish@latest
         with:
@@ -313,9 +305,7 @@ jobs:
             --channel unlisted \
             --api-key ${{ secrets.FF_JWT_ISSUER }} \
             --api-secret ${{ secrets.FF_JWT_SECRET }}
-
           mv dist/*.xpi dist/${{ env.XPI_NAME }}
-
       - name: Upload files to a GitHub release
         id: upload-xpi
         uses: svenstaro/upload-release-action@v2
@@ -358,7 +348,6 @@ jobs:
         id: get-filepath
         run: |
           echo "zip_file=$(ls ${{ steps.download-artifact.outputs.download-path }}/dist/*edge*)" >> $GITHUB_OUTPUT
-
       - name: Upload to Edge Add-ons Store
         uses: wdzeng/edge-addon@v2
         with:
